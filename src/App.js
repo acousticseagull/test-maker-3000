@@ -305,11 +305,14 @@ export default function App() {
 
             {shortAnswer.map(({ key, question }, index) => (
               <div key={key} className="mb-3">
-                {index + 1}. ________________________ {question} (
-                <a href="#" onClick={(e) => removeQuestion(e, key)}>
-                  remove
-                </a>
-                )
+                {index + 1}. ________________________ {question}{' '}
+                <span className="d-print-none">
+                  (
+                  <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                    remove
+                  </a>
+                  )
+                </span>
               </div>
             ))}
           </div>
@@ -325,24 +328,34 @@ export default function App() {
             </h5>
 
             <div className="row">
-              <div className="col-6 mr-3">
+              <div className="col-auto mr-3">
                 {matching
                   .filter(({ question }) => question.length)
                   .map(({ key, question }, index) => (
                     <div key={key} className="mb-3">
-                      __________ {index + 1}. {question} (
-                      <a href="#" onClick={(e) => removeQuestion(e, key)}>
-                        remove
-                      </a>
-                      )
+                      __________ {index + 1}. {question}{' '}
+                      <span className="d-print-none">
+                        (
+                        <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                          remove
+                        </a>
+                        )
+                      </span>
                     </div>
                   ))}
               </div>
 
-              <div className="col-6">
+              <div className="col">
                 {matching.map(({ key, answer }, index) => (
                   <div key={index} className="mb-3">
-                    {alphabet[index]}. {answer}
+                    {alphabet[index]}. {answer}{' '}
+                    <span className="d-print-none">
+                      (
+                      <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                        remove
+                      </a>
+                      )
+                    </span>
                   </div>
                 ))}
               </div>
@@ -362,11 +375,14 @@ export default function App() {
             {multipleChoice.map(({ key, question, answer }, index) => (
               <div key={key} className="mb-3">
                 <div className="mb-1">
-                  __________ {index + 1}. {question} (
-                  <a href="#" onClick={(e) => removeQuestion(e, key)}>
-                    remove
-                  </a>
-                  )
+                  __________ {index + 1}. {question}{' '}
+                  <span className="d-print-none">
+                    (
+                    <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                      remove
+                    </a>
+                    )
+                  </span>
                 </div>
 
                 <div className="row mx-5">
