@@ -67,6 +67,7 @@ export default function App() {
     setTest((state) => [
       ...state,
       {
+        key: Date.now(),
         type,
         question,
         answer: type === 2 ? [a, b, c, d] : answer,
@@ -76,121 +77,264 @@ export default function App() {
     e.target.reset();
   };
 
+  const newTest = (e) => {
+    e.preventDefault();
+    setTest([]);
+  };
+
+  async function saveFile(e) {
+    // create a new handle
+    const newHandle = await window.showSaveFilePicker();
+
+    // create a FileSystemWritableFileStream to write to
+    const writableStream = await newHandle.createWritable();
+
+    // write our file
+    await writableStream.write(JSON.stringify(test));
+
+    // close the file and write the contents to disk.
+    await writableStream.close();
+  }
+
+  async function openFile(e) {
+    const pickerOpts = {
+      types: [
+        {
+          description: 'JSON',
+          accept: {
+            'application/json': ['.json'],
+          },
+        },
+      ],
+      excludeAcceptAllOption: true,
+      multiple: false,
+    };
+
+    // Open file picker and destructure the result the first handle
+    const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+
+    // get file contents
+    const fileData = await fileHandle.getFile();
+
+    const content = await fileData.text();
+
+    setTest(JSON.parse(content));
+  }
+
+  const shortAnswer = React.useMemo(
+    () => test.filter(({ type }) => type === 0),
+    [test]
+  );
+
+  const matching = React.useMemo(
+    () => test.filter(({ type }) => type === 1),
+    [test]
+  );
+
+  const multipleChoice = React.useMemo(
+    () => shuffle(test.filter(({ type }) => type === 2)),
+    [test]
+  );
+
   React.useEffect(() => {
-    setTest(JSON.parse(localStorage.getItem('test')) || []);
+    //setTest(JSON.parse(localStorage.getItem('test')) || []);
   }, []);
 
   React.useEffect(() => {
-    if (test.length) localStorage.setItem('test', JSON.stringify(test));
+    //if (test.length) localStorage.setItem('test', JSON.stringify(test));
   }, [test]);
 
   return (
-    <div className="page">
-      <form onSubmit={handleSubmit}>
-        <div>
-          <select
-            name="type"
-            onChange={(e) => setType(+e.target.value)}
-            value={type}
-          >
-            <option value={0}>Short Answer</option>
-            <option value={1}>Matching</option>
-            <option value={2}>Multiple Choice</option>
-          </select>
-        </div>
-
-        <div>
-          <textarea name="question" placeholder="Question" />
-        </div>
-
-        {type === 1 && (
-          <div>
-            <textarea name="answer" placeholder="Answer" />
-          </div>
-        )}
-
-        {type === 2 && (
-          <div className="flex">
-            <textarea name="a" placeholder="A" />
-            <textarea name="b" placeholder="B" />
-            <textarea name="c" placeholder="C" />
-            <textarea name="d" placeholder="D" />
-          </div>
-        )}
-
-        <button>Add</button>
-      </form>
-
-      <div>
-        <h1>TEST</h1>
-
-        <div className="flex space-between mb-3">
-          <div>Name: _____________________________</div>
-          <div>Date: ___________________</div>
-        </div>
-      </div>
-
-      <div className="mb-2">
-        <h3>SHORT ANSWER</h3>
-        <p>Write the correct answer in the blank.</p>
-
-        {test
-          .filter((item) => item.type === 0)
-          .map(({ question }, key) => (
-            <div key={key} className="mb-1">
-              {key + 1}. ________________________ {question}
-            </div>
-          ))}
-      </div>
-
-      <div className="mb-1">
-        <h3>MATCHING</h3>
-        <p>Match each description with the correct name.</p>
-
-        <div className="flex">
-          <div className="w-half-page mr-5">
-            {test
-              .filter((item) => item.type === 1)
-              .map(({ question }, key) => (
-                <div key={key} className="mb-1">
-                  __________ {key + 1}. {question}
-                </div>
-              ))}
-          </div>
+    <>
+      <nav
+        className="navbar sticky-top bg-primary bg-body-tertiary d-print-none"
+        data-bs-theme="dark"
+      >
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1">Test Maker 3000</span>
 
           <div>
-            {shuffle(test.filter((item) => item.type === 1)).map(
-              ({ answer }, key) => (
-                <div key={key} className="mb-1">
-                  {alphabet[key]}. {answer}
-                </div>
-              )
-            )}
+            <button class="btn" onClick={newTest}>
+              New Test
+            </button>
+
+            <button class="btn" onClick={openFile}>
+              Open Test
+            </button>
+
+            <button class="btn" onClick={saveFile}>
+              Save Test
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div>
-        <h3>MULTIPLE CHOICE</h3>
-        <p>Write the letter of the correct choice in the blank.</p>
-
-        {test
-          .filter((item) => item.type === 2)
-          .map(({ question, answer }, key) => (
-            <div key={key} className="mb-1">
-              <div className="mb-1-2">
-                __________ {key + 1}. {question}
+      <div className="container-fluid">
+        <div className="card my-3 d-print-none">
+          <div className="card-body">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-2">
+                <select
+                  name="type"
+                  onChange={(e) => setType(+e.target.value)}
+                  value={type}
+                  className="form-control"
+                >
+                  <option value={0}>Short Answer</option>
+                  <option value={1}>Matching</option>
+                  <option value={2}>Multiple Choice</option>
+                </select>
               </div>
-              <div className="flex">
-                {answer.map((item, key) => (
-                  <div key={key} className="mr-2">
-                    {alphabet[key]}. {item}
+
+              <div className="row">
+                <div className="col">
+                  <textarea
+                    className="form-control"
+                    name="question"
+                    placeholder="Question"
+                  />
+                </div>
+
+                {type === 1 && (
+                  <div className="col">
+                    <textarea
+                      className="form-control"
+                      name="answer"
+                      placeholder="Answer"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {type === 2 && (
+                <div className="row mt-2">
+                  <div className="col">
+                    <textarea
+                      className="form-control"
+                      name="a"
+                      placeholder="A"
+                    />
+                  </div>
+                  <div className="col">
+                    <textarea
+                      className="form-control"
+                      name="b"
+                      placeholder="B"
+                    />
+                  </div>
+                  <div className="col">
+                    <textarea
+                      className="form-control"
+                      name="c"
+                      placeholder="C"
+                    />
+                  </div>
+                  <div className="col">
+                    <textarea
+                      className="form-control"
+                      name="d"
+                      placeholder="D"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="row">
+                <div className="col">
+                  <button className="btn btn-primary mt-2">Add</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="row mb-3">
+            <div className="col-6">Name: _____________________________</div>
+            <div className="col-3">Date: ______________</div>
+            <div className="col-3 text-end">Score: _______</div>
+          </div>
+
+          <div className="border-bottom border-3 border-black mb-3">
+            <div className="fw-bold">QUIZ</div>
+          </div>
+        </div>
+
+        {shortAnswer.length > 0 && (
+          <div className="mb-4">
+            <h5>
+              SHORT ANSWER:{' '}
+              <small className="text-body-secondary">
+                Write the correct answer in the blank.
+              </small>
+            </h5>
+
+            {shortAnswer.map(({ key, question }, index) => (
+              <div key={key} className="mb-3">
+                {index + 1}. ________________________ {question}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {matching.length > 0 && (
+          <div className="mb-2">
+            <h5>
+              MATCHING:{' '}
+              <small className="text-body-secondary">
+                Match each description with the correct name.
+              </small>
+            </h5>
+
+            <div className="row">
+              <div className="col-6 mr-3">
+                {matching
+                  .filter(({ question }) => question.length)
+                  .map(({ key, question }, index) => (
+                    <div key={key} className="mb-3">
+                      __________ {index + 1}. {question}
+                    </div>
+                  ))}
+              </div>
+
+              <div className="col-6">
+                {matching.map(({ key, answer }, index) => (
+                  <div key={index} className="mb-3">
+                    {alphabet[index]}. {answer}
                   </div>
                 ))}
               </div>
             </div>
-          ))}
+          </div>
+        )}
+
+        {multipleChoice.length > 0 && (
+          <div>
+            <h5>
+              MULTIPLE CHOICE:{' '}
+              <small className="text-body-secondary">
+                Write the letter of the correct choice in the blank.
+              </small>
+            </h5>
+
+            {multipleChoice.map(({ key, question, answer }, index) => (
+              <div key={key} className="mb-3">
+                <div className="mb-1">
+                  __________ {index + 1}. {question}
+                </div>
+
+                <div className="row mx-5">
+                  {answer.map((item, key) => (
+                    <div key={key} className="col-6">
+                      {alphabet[index]}. {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }
