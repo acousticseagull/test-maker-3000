@@ -50,6 +50,8 @@ export default function App() {
 
   const [file, setFile] = React.useState();
 
+  const [fileName, setFileName] = React.useState();
+
   const count = React.useRef(0);
 
   const handleSubmit = (e) => {
@@ -103,6 +105,8 @@ export default function App() {
 
     const fileHandle = file ? file : await window.showSaveFilePicker(options);
     if (!file) setFile(fileHandle);
+    const fileData = fileHandle.getFile();
+    setFileName(fileData.name);
     const writableStream = await fileHandle.createWritable();
     await writableStream.write(JSON.stringify(test));
     await writableStream.close();
@@ -125,12 +129,11 @@ export default function App() {
     };
 
     const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
-
-    setFile(fileHandle);
-
     const fileData = await fileHandle.getFile();
     const content = await fileData.text();
 
+    setFile(fileHandle);
+    setFileName(fileData.name);
     setTest(JSON.parse(content));
   }
 
@@ -163,6 +166,11 @@ export default function App() {
     [test]
   );
 
+  const pointsToSubtractFromEachWrongAnswer = React.useMemo(
+    () => 100 / test.length,
+    [test]
+  );
+
   return (
     <>
       <Navbar
@@ -175,7 +183,7 @@ export default function App() {
       <Form handleSubmit={handleSubmit} type={type} setType={setType} />
 
       <div className="container-md">
-        <div className="mb-4 d-none d-print-block">
+        <div className="mb-4 d-print-block">
           <div className="row mb-3">
             <div className="col-6">Name: _____________________________</div>
             <div className="col-3">Date: ______________</div>
@@ -183,7 +191,14 @@ export default function App() {
           </div>
 
           <div className="border-bottom border-3 border-black mb-3">
-            <div className="fw-bold">QUIZ</div>
+            <div className="fw-bold">
+              {fileName?.replace('.json', '').toUpperCase() || 'QUIZ'}
+            </div>
+          </div>
+
+          <div className="text-end text-muted fst-italic">
+            {Number.isInteger(pointsToSubtractFromEachWrongAnswer) &&
+              `-${pointsToSubtractFromEachWrongAnswer} each`}
           </div>
         </div>
 
@@ -226,10 +241,10 @@ export default function App() {
             </h5>
 
             <div className="row">
-              <div className="col-6">
+              <div className="col-7">
                 {matching.map(({ key, question, number }) => (
                   <div key={key} className="row mb-3">
-                    <div className="col-auto">__________ {number}.</div>
+                    <div className="col-auto">_____ {number}.</div>
                     <div className="col">
                       {question}{' '}
                       <span className="d-print-none">
@@ -244,7 +259,7 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="col-5 offset-1">
+              <div className="col-4 offset-1">
                 {matching.map(({ key, answer }, index) => (
                   <div key={key} className="mb-3">
                     {alphabet[index]}. {answer}{' '}

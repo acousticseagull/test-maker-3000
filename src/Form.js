@@ -55,7 +55,7 @@ export const Form = ({ handleSubmit, type, setType }) => {
             </div>
           )}
 
-          <div class="d-grid gap-2">
+          <div className="d-grid gap-2">
             <button className="btn btn-primary mt-2">Add</button>
           </div>
         </form>

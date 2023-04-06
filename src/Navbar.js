@@ -7,8 +7,8 @@ export const Navbar = ({ newFile, openFile, saveFile, printFile }) => {
       data-bs-theme="dark"
     >
       <div className="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav">
+        <div className="collapse navbar-collapse" id="navbarNavDropdown">
+          <ul className="navbar-nav">
             <li className="dropdown">
               <a
                 className="nav-link dropdown-toggle"
@@ -32,7 +32,7 @@ export const Navbar = ({ newFile, openFile, saveFile, printFile }) => {
                   </a>
                 </li>
                 <li>
-                  <hr class="dropdown-divider" />
+                  <hr className="dropdown-divider" />
                 </li>
                 <li>
                   <a
@@ -44,7 +44,7 @@ export const Navbar = ({ newFile, openFile, saveFile, printFile }) => {
                   </a>
                 </li>
                 <li>
-                  <hr class="dropdown-divider" />
+                  <hr className="dropdown-divider" />
                 </li>
                 <li>
                   <a className="dropdown-item" onClick={printFile} href="#">
