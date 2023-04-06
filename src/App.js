@@ -77,22 +77,15 @@ export default function App() {
     e.target.reset();
   };
 
-  const newTest = (e) => {
+  const newFile = (e) => {
     e.preventDefault();
     setTest([]);
   };
 
   async function saveFile(e) {
-    // create a new handle
     const newHandle = await window.showSaveFilePicker();
-
-    // create a FileSystemWritableFileStream to write to
     const writableStream = await newHandle.createWritable();
-
-    // write our file
     await writableStream.write(JSON.stringify(test));
-
-    // close the file and write the contents to disk.
     await writableStream.close();
   }
 
@@ -110,16 +103,17 @@ export default function App() {
       multiple: false,
     };
 
-    // Open file picker and destructure the result the first handle
     const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
-
-    // get file contents
     const fileData = await fileHandle.getFile();
-
     const content = await fileData.text();
 
     setTest(JSON.parse(content));
   }
+
+  const printFile = (e) => {
+    e.preventDefault();
+    print();
+  };
 
   const shortAnswer = React.useMemo(
     () => test.filter(({ type }) => type === 0),
@@ -137,39 +131,70 @@ export default function App() {
   );
 
   React.useEffect(() => {
-    //setTest(JSON.parse(localStorage.getItem('test')) || []);
+    setTest(JSON.parse(sessionStorage.getItem('test')) || []);
   }, []);
 
   React.useEffect(() => {
-    //if (test.length) localStorage.setItem('test', JSON.stringify(test));
+    if (test.length) sessionStorage.setItem('test', JSON.stringify(test));
   }, [test]);
 
   return (
     <>
       <nav
-        className="navbar sticky-top bg-primary bg-body-tertiary d-print-none"
+        className="navbar navbar-expand-sm bg-body-tertiary d-print-none"
         data-bs-theme="dark"
       >
         <div className="container-fluid">
           <span className="navbar-brand mb-0 h1">Test Maker 3000</span>
 
-          <div>
-            <button class="btn" onClick={newTest}>
-              New Test
-            </button>
+          <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+              <li className="dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  File
+                </a>
 
-            <button class="btn" onClick={openFile}>
-              Open Test
-            </button>
-
-            <button class="btn" onClick={saveFile}>
-              Save Test
-            </button>
+                <ul className="dropdown-menu">
+                  <li>
+                    <a className="dropdown-item" onClick={newFile} href="#">
+                      New
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" onClick={openFile} href="#">
+                      Open
+                    </a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider" />
+                  </li>
+                  <li>
+                    <a className="dropdown-item" onClick={saveFile} href="#">
+                      Save
+                    </a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider" />
+                  </li>
+                  <li>
+                    <a className="dropdown-item" onClick={printFile} href="#">
+                      Print
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </div>
       </nav>
 
-      <div className="container-fluid">
+      <div className="container-md">
         <div className="card my-3 d-print-none">
           <div className="card-body">
             <form onSubmit={handleSubmit}>
@@ -239,16 +264,14 @@ export default function App() {
                 </div>
               )}
 
-              <div className="row">
-                <div className="col">
-                  <button className="btn btn-primary mt-2">Add</button>
-                </div>
+              <div class="d-grid gap-2 col-6 mx-auto">
+                <button className="btn btn-primary mt-2">Add</button>
               </div>
             </form>
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 d-none d-print-block">
           <div className="row mb-3">
             <div className="col-6">Name: _____________________________</div>
             <div className="col-3">Date: ______________</div>
@@ -324,11 +347,10 @@ export default function App() {
                 </div>
 
                 <div className="row mx-5">
-                  {answer.map((item, key) => (
-                    <div key={key} className="col-6">
-                      {alphabet[index]}. {item}
-                    </div>
-                  ))}
+                  <div className="col-6">a. {answer[0]}</div>
+                  <div className="col-6">b. {answer[1]}</div>
+                  <div className="col-6">c. {answer[2]}</div>
+                  <div className="col-6">d. {answer[3]}</div>
                 </div>
               </div>
             ))}
