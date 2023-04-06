@@ -52,6 +52,8 @@ export default function App() {
 
   const [test, setTest] = React.useState([]);
 
+  const [file, setFile] = React.useState();
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -64,15 +66,19 @@ export default function App() {
     const c = target.c?.value;
     const d = target.d?.value;
 
-    setTest((state) => [
-      ...state,
+    const newTest = [
+      ...test,
       {
         key: Date.now(),
         type,
         question,
         answer: type === 2 ? [a, b, c, d] : answer,
       },
-    ]);
+    ];
+
+    setTest(newTest);
+
+    saveFile(null, newTest);
 
     e.target.reset();
   };
@@ -80,16 +86,33 @@ export default function App() {
   const newFile = (e) => {
     e.preventDefault();
     setTest([]);
+    setFile(null);
   };
 
-  async function saveFile(e) {
-    const newHandle = await window.showSaveFilePicker();
-    const writableStream = await newHandle.createWritable();
+  async function saveFile(e, test) {
+    e && e.preventDefault();
+
+    const options = {
+      types: [
+        {
+          description: 'Test',
+          accept: {
+            'text/plain': ['.json'],
+          },
+        },
+      ],
+    };
+
+    const fileHandle = file ? file : await window.showSaveFilePicker(options);
+    if (!file) setFile(fileHandle);
+    const writableStream = await fileHandle.createWritable();
     await writableStream.write(JSON.stringify(test));
     await writableStream.close();
   }
 
   async function openFile(e) {
+    e.preventDefault();
+
     const pickerOpts = {
       types: [
         {
@@ -104,6 +127,9 @@ export default function App() {
     };
 
     const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+
+    setFile(fileHandle);
+
     const fileData = await fileHandle.getFile();
     const content = await fileData.text();
 
@@ -113,6 +139,12 @@ export default function App() {
   const printFile = (e) => {
     e.preventDefault();
     print();
+  };
+
+  const removeQuestion = (key) => {
+    const newTest = [...test.filter((item) => item.key !== key)];
+    setTest(newTest);
+    saveFile(null, newTest);
   };
 
   const shortAnswer = React.useMemo(
@@ -130,14 +162,6 @@ export default function App() {
     [test]
   );
 
-  React.useEffect(() => {
-    setTest(JSON.parse(sessionStorage.getItem('test')) || []);
-  }, []);
-
-  React.useEffect(() => {
-    if (test.length) sessionStorage.setItem('test', JSON.stringify(test));
-  }, [test]);
-
   return (
     <>
       <nav
@@ -145,8 +169,6 @@ export default function App() {
         data-bs-theme="dark"
       >
         <div className="container-fluid">
-          <span className="navbar-brand mb-0 h1">Test Maker 3000</span>
-
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
               <li className="dropdown">
@@ -175,7 +197,11 @@ export default function App() {
                     <hr class="dropdown-divider" />
                   </li>
                   <li>
-                    <a className="dropdown-item" onClick={saveFile} href="#">
+                    <a
+                      className="dropdown-item"
+                      onClick={(e) => saveFile(e, test)}
+                      href="#"
+                    >
                       Save
                     </a>
                   </li>
@@ -194,83 +220,67 @@ export default function App() {
         </div>
       </nav>
 
-      <div className="container-md">
-        <div className="card my-3 d-print-none">
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-2">
-                <select
-                  name="type"
-                  onChange={(e) => setType(+e.target.value)}
-                  value={type}
+      <div className="p-3 mb-4 d-print-none shadow">
+        <div className="">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-2">
+              <select
+                name="type"
+                onChange={(e) => setType(+e.target.value)}
+                value={type}
+                className="form-select"
+              >
+                <option value={0}>Short Answer</option>
+                <option value={1}>Matching</option>
+                <option value={2}>Multiple Choice</option>
+              </select>
+            </div>
+
+            <div className="row">
+              <div className="col">
+                <textarea
                   className="form-control"
-                >
-                  <option value={0}>Short Answer</option>
-                  <option value={1}>Matching</option>
-                  <option value={2}>Multiple Choice</option>
-                </select>
+                  name="question"
+                  placeholder="Question"
+                />
               </div>
 
-              <div className="row">
+              {type === 1 && (
                 <div className="col">
                   <textarea
                     className="form-control"
-                    name="question"
-                    placeholder="Question"
+                    name="answer"
+                    placeholder="Answer"
                   />
                 </div>
-
-                {type === 1 && (
-                  <div className="col">
-                    <textarea
-                      className="form-control"
-                      name="answer"
-                      placeholder="Answer"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {type === 2 && (
-                <div className="row mt-2">
-                  <div className="col">
-                    <textarea
-                      className="form-control"
-                      name="a"
-                      placeholder="A"
-                    />
-                  </div>
-                  <div className="col">
-                    <textarea
-                      className="form-control"
-                      name="b"
-                      placeholder="B"
-                    />
-                  </div>
-                  <div className="col">
-                    <textarea
-                      className="form-control"
-                      name="c"
-                      placeholder="C"
-                    />
-                  </div>
-                  <div className="col">
-                    <textarea
-                      className="form-control"
-                      name="d"
-                      placeholder="D"
-                    />
-                  </div>
-                </div>
               )}
+            </div>
 
-              <div class="d-grid gap-2 col-6 mx-auto">
-                <button className="btn btn-primary mt-2">Add</button>
+            {type === 2 && (
+              <div className="row mt-2">
+                <div className="col">
+                  <textarea className="form-control" name="a" placeholder="A" />
+                </div>
+                <div className="col">
+                  <textarea className="form-control" name="b" placeholder="B" />
+                </div>
+                <div className="col">
+                  <textarea className="form-control" name="c" placeholder="C" />
+                </div>
+                <div className="col">
+                  <textarea className="form-control" name="d" placeholder="D" />
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
+            )}
 
+            <div class="d-grid gap-2">
+              <button className="btn btn-primary mt-2">Add</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="container-md">
         <div className="mb-4 d-none d-print-block">
           <div className="row mb-3">
             <div className="col-6">Name: _____________________________</div>
@@ -294,7 +304,11 @@ export default function App() {
 
             {shortAnswer.map(({ key, question }, index) => (
               <div key={key} className="mb-3">
-                {index + 1}. ________________________ {question}
+                {index + 1}. ________________________ {question} (
+                <a href="#" onClick={() => removeQuestion(key)}>
+                  remove
+                </a>
+                )
               </div>
             ))}
           </div>
@@ -315,7 +329,11 @@ export default function App() {
                   .filter(({ question }) => question.length)
                   .map(({ key, question }, index) => (
                     <div key={key} className="mb-3">
-                      __________ {index + 1}. {question}
+                      __________ {index + 1}. {question} (
+                      <a href="#" onClick={() => removeQuestion(key)}>
+                        remove
+                      </a>
+                      )
                     </div>
                   ))}
               </div>
@@ -343,7 +361,11 @@ export default function App() {
             {multipleChoice.map(({ key, question, answer }, index) => (
               <div key={key} className="mb-3">
                 <div className="mb-1">
-                  __________ {index + 1}. {question}
+                  __________ {index + 1}. {question} (
+                  <a href="#" onClick={() => removeQuestion(key)}>
+                    remove
+                  </a>
+                  )
                 </div>
 
                 <div className="row mx-5">
