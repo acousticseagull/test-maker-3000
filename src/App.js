@@ -18,6 +18,16 @@ function shuffle(array) {
   return array;
 }
 
+function sortAndOrderQuestions(test) {
+  return [...test]
+    .sort((a, b) => {
+      if (a.type < b.type) return -1;
+      if (a.type > b.type) return 1;
+      return 0;
+    })
+    .map((item, index) => ({ ...item, number: index + 1 }));
+}
+
 const alphabet = [
   'a',
   'b',
@@ -54,6 +64,8 @@ export default function App() {
 
   const [file, setFile] = React.useState();
 
+  const count = React.useRef(0);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -66,7 +78,7 @@ export default function App() {
     const c = target.c?.value;
     const d = target.d?.value;
 
-    const newTest = [
+    const newTest = sortAndOrderQuestions([
       ...test,
       {
         key: Date.now(),
@@ -74,7 +86,7 @@ export default function App() {
         question,
         answer: type === 2 ? [a, b, c, d] : answer,
       },
-    ];
+    ]);
 
     setTest(newTest);
 
@@ -143,7 +155,9 @@ export default function App() {
 
   const removeQuestion = (e, key) => {
     e.preventDefault();
-    const newTest = [...test.filter((item) => item.key !== key)];
+    const newTest = sortAndOrderQuestions([
+      ...test.filter((item) => item.key !== key),
+    ]);
     setTest(newTest);
     saveFile(null, newTest);
   };
@@ -159,7 +173,7 @@ export default function App() {
   );
 
   const multipleChoice = React.useMemo(
-    () => shuffle(test.filter(({ type }) => type === 2)),
+    () => test.filter(({ type }) => type === 2),
     [test]
   );
 
@@ -303,9 +317,9 @@ export default function App() {
               </small>
             </h5>
 
-            {shortAnswer.map(({ key, question }, index) => (
+            {shortAnswer.map(({ key, question, number }, index) => (
               <div key={key} className="mb-3">
-                {index + 1}. ________________________ {question}{' '}
+                {number}. ________________________ {question}{' '}
                 <span className="d-print-none">
                   (
                   <a href="#" onClick={(e) => removeQuestion(e, key)}>
@@ -331,9 +345,9 @@ export default function App() {
               <div className="col-auto mr-3">
                 {matching
                   .filter(({ question }) => question.length)
-                  .map(({ key, question }, index) => (
+                  .map(({ key, question, number }, index) => (
                     <div key={key} className="mb-3">
-                      __________ {index + 1}. {question}{' '}
+                      __________ {number}. {question}{' '}
                       <span className="d-print-none">
                         (
                         <a href="#" onClick={(e) => removeQuestion(e, key)}>
@@ -346,7 +360,7 @@ export default function App() {
               </div>
 
               <div className="col">
-                {matching.map(({ key, answer }, index) => (
+                {shuffle(matching).map(({ key, answer }, index) => (
                   <div key={index} className="mb-3">
                     {alphabet[index]}. {answer}{' '}
                     <span className="d-print-none">
@@ -372,10 +386,10 @@ export default function App() {
               </small>
             </h5>
 
-            {multipleChoice.map(({ key, question, answer }, index) => (
+            {multipleChoice.map(({ key, question, answer, number }, index) => (
               <div key={key} className="mb-3">
                 <div className="mb-1">
-                  __________ {index + 1}. {question}{' '}
+                  __________ {number}. {question}{' '}
                   <span className="d-print-none">
                     (
                     <a href="#" onClick={(e) => removeQuestion(e, key)}>
