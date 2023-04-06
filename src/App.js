@@ -1,22 +1,8 @@
 import React from 'react';
 import './style.css';
 
-function shuffle(array) {
-  let currentIndex = array.length,
-    randomIndex;
-
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
-
-  return array;
-}
+import { Navbar } from './Navbar';
+import { Form } from './Form';
 
 function sortAndOrderQuestions(test) {
   return [...test]
@@ -179,121 +165,14 @@ export default function App() {
 
   return (
     <>
-      <nav
-        className="navbar navbar-expand-sm bg-body-tertiary d-print-none"
-        data-bs-theme="dark"
-      >
-        <div className="container-fluid">
-          <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav">
-              <li className="dropdown">
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  File
-                </a>
+      <Navbar
+        newFile={newFile}
+        saveFile={saveFile}
+        openFile={openFile}
+        printFile={printFile}
+      />
 
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" onClick={newFile} href="#">
-                      New
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" onClick={openFile} href="#">
-                      Open
-                    </a>
-                  </li>
-                  <li>
-                    <hr class="dropdown-divider" />
-                  </li>
-                  <li>
-                    <a
-                      className="dropdown-item"
-                      onClick={(e) => saveFile(e, test)}
-                      href="#"
-                    >
-                      Save
-                    </a>
-                  </li>
-                  <li>
-                    <hr class="dropdown-divider" />
-                  </li>
-                  <li>
-                    <a className="dropdown-item" onClick={printFile} href="#">
-                      Print
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      <div className="p-3 mb-4 d-print-none shadow">
-        <div className="">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-2">
-              <select
-                name="type"
-                onChange={(e) => setType(+e.target.value)}
-                value={type}
-                className="form-select"
-              >
-                <option value={0}>Short Answer</option>
-                <option value={1}>Matching</option>
-                <option value={2}>Multiple Choice</option>
-              </select>
-            </div>
-
-            <div className="row">
-              <div className="col">
-                <textarea
-                  className="form-control"
-                  name="question"
-                  placeholder="Question"
-                />
-              </div>
-
-              {type === 1 && (
-                <div className="col">
-                  <textarea
-                    className="form-control"
-                    name="answer"
-                    placeholder="Answer"
-                  />
-                </div>
-              )}
-            </div>
-
-            {type === 2 && (
-              <div className="row mt-2">
-                <div className="col">
-                  <textarea className="form-control" name="a" placeholder="A" />
-                </div>
-                <div className="col">
-                  <textarea className="form-control" name="b" placeholder="B" />
-                </div>
-                <div className="col">
-                  <textarea className="form-control" name="c" placeholder="C" />
-                </div>
-                <div className="col">
-                  <textarea className="form-control" name="d" placeholder="D" />
-                </div>
-              </div>
-            )}
-
-            <div class="d-grid gap-2">
-              <button className="btn btn-primary mt-2">Add</button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <Form handleSubmit={handleSubmit} type={type} setType={setType} />
 
       <div className="container-md">
         <div className="mb-4 d-none d-print-block">
@@ -318,15 +197,20 @@ export default function App() {
             </h5>
 
             {shortAnswer.map(({ key, question, number }, index) => (
-              <div key={key} className="mb-3">
-                {number}. ________________________ {question}{' '}
-                <span className="d-print-none">
-                  (
-                  <a href="#" onClick={(e) => removeQuestion(e, key)}>
-                    remove
-                  </a>
-                  )
-                </span>
+              <div key={key} className="mb-3 row">
+                <div className="col-auto">
+                  {number}. ________________________
+                </div>
+                <div className="col">
+                  {question}{' '}
+                  <span className="d-print-none">
+                    (
+                    <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                      remove
+                    </a>
+                    )
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -342,12 +226,12 @@ export default function App() {
             </h5>
 
             <div className="row">
-              <div className="col-auto mr-3">
-                {matching
-                  .filter(({ question }) => question.length)
-                  .map(({ key, question, number }, index) => (
-                    <div key={key} className="mb-3">
-                      __________ {number}. {question}{' '}
+              <div className="col-6">
+                {matching.map(({ key, question, number }) => (
+                  <div key={key} className="row mb-3">
+                    <div className="col-auto">__________ {number}.</div>
+                    <div className="col">
+                      {question}{' '}
                       <span className="d-print-none">
                         (
                         <a href="#" onClick={(e) => removeQuestion(e, key)}>
@@ -356,12 +240,13 @@ export default function App() {
                         )
                       </span>
                     </div>
-                  ))}
+                  </div>
+                ))}
               </div>
 
-              <div className="col">
-                {shuffle(matching).map(({ key, answer }, index) => (
-                  <div key={index} className="mb-3">
+              <div className="col-5 offset-1">
+                {matching.map(({ key, answer }, index) => (
+                  <div key={key} className="mb-3">
                     {alphabet[index]}. {answer}{' '}
                     <span className="d-print-none">
                       (
@@ -386,23 +271,26 @@ export default function App() {
               </small>
             </h5>
 
-            {multipleChoice.map(({ key, question, answer, number }, index) => (
+            {multipleChoice.map(({ key, question, answer, number }) => (
               <div key={key} className="mb-3">
-                <div className="mb-1">
-                  __________ {number}. {question}{' '}
-                  <span className="d-print-none">
-                    (
-                    <a href="#" onClick={(e) => removeQuestion(e, key)}>
-                      remove
-                    </a>
-                    )
-                  </span>
+                <div className="mb-1 row">
+                  <div className="col-auto">__________ {number}.</div>
+                  <div className="col">
+                    {question}{' '}
+                    <span className="d-print-none">
+                      (
+                      <a href="#" onClick={(e) => removeQuestion(e, key)}>
+                        remove
+                      </a>
+                      )
+                    </span>
+                  </div>
                 </div>
 
-                <div className="row mx-5">
+                <div className="row">
                   <div className="col-6">a. {answer[0]}</div>
-                  <div className="col-6">b. {answer[1]}</div>
-                  <div className="col-6">c. {answer[2]}</div>
+                  <div className="col-6">c. {answer[1]}</div>
+                  <div className="col-6">b. {answer[2]}</div>
                   <div className="col-6">d. {answer[3]}</div>
                 </div>
               </div>
