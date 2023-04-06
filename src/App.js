@@ -141,7 +141,8 @@ export default function App() {
     print();
   };
 
-  const removeQuestion = (key) => {
+  const removeQuestion = (e, key) => {
+    e.preventDefault();
     const newTest = [...test.filter((item) => item.key !== key)];
     setTest(newTest);
     saveFile(null, newTest);
@@ -305,7 +306,7 @@ export default function App() {
             {shortAnswer.map(({ key, question }, index) => (
               <div key={key} className="mb-3">
                 {index + 1}. ________________________ {question} (
-                <a href="#" onClick={() => removeQuestion(key)}>
+                <a href="#" onClick={(e) => removeQuestion(e, key)}>
                   remove
                 </a>
                 )
@@ -330,7 +331,7 @@ export default function App() {
                   .map(({ key, question }, index) => (
                     <div key={key} className="mb-3">
                       __________ {index + 1}. {question} (
-                      <a href="#" onClick={() => removeQuestion(key)}>
+                      <a href="#" onClick={(e) => removeQuestion(e, key)}>
                         remove
                       </a>
                       )
@@ -362,7 +363,7 @@ export default function App() {
               <div key={key} className="mb-3">
                 <div className="mb-1">
                   __________ {index + 1}. {question} (
-                  <a href="#" onClick={() => removeQuestion(key)}>
+                  <a href="#" onClick={(e) => removeQuestion(e, key)}>
                     remove
                   </a>
                   )
